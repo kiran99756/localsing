@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Local Share</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <link rel="manifest" href="/static/manifest.json">
+    <link rel="icon" href="/static/icons/icon-192.png">
+    <link rel="apple-touch-icon" href="/static/icons/icon-192.png">
+    <meta name="theme-color" content="#1e293b">
+</head>
+<body>
+
+    <!-- ============================================================
+         DEVICE NAME MODAL
+         Shown only the first time (when no "device_name" cookie exists).
+         ============================================================ -->
+    <div id="nameModal" class="modal-overlay" style="display:none;">
+        <div class="modal-box">
+            <h2>What should we call your device?</h2>
+            <p class="modal-sub">This name will be shown next to files you share and chat messages you send.</p>
+            <input type="text" id="nameInput" placeholder="e.g. Rahul's Phone" maxlength="30">
+            <button id="nameSaveBtn">Continue</button>
+        </div>
+    </div>
+
+    <div class="app">
+
+        <!-- ============================================================
+             HEADER
+             ============================================================ -->
+        <header class="topbar">
+            <h1>📡 Local Share</h1>
+            <div class="topbar-right">
+                <span class="lock-badge" title="Files are encrypted at rest">🔐</span>
+                <span id="deviceBadge" class="device-badge">{{ device_name }}</span>
+                <button id="darkModeToggle" class="icon-btn" title="Toggle dark mode">🌙</button>
+                <form method="post" action="/logout" style="margin:0;">
+                    <button type="submit" class="icon-btn" title="Log out">🚪</button>
+                </form>
+            </div>
+        </header>
+
+        <!-- ============================================================
+             QR CODE - auto device discovery: scan, or use the mDNS name
+             ============================================================ -->
+        <section class="card qr-card">
+            <h2>Scan to Connect</h2>
+            <img src="/qr.png" width="180" alt="QR code to connect">
+            <p class="hint">Other devices on the same Wi-Fi can scan this to join.</p>
+            {% if mdns_active %}
+            <p class="hint">Or just type: <code>http://{{ mdns_hostname }}.local:8000</code></p>
+            {% else %}
+            <p class="hint">Name-based discovery (localshare.local) is off - install the <code>zeroconf</code> package to enable it.</p>
+            {% endif %}
+        </section>
+
+        <!-- ============================================================
+             INTERNET SHARING (optional) - a friend off your Wi-Fi
+             ============================================================ -->
+        <section class="card" id="internetShareCard">
+            <h2>🌐 Share Over the Internet</h2>
+            <p class="hint">Off by default. Turning this on gives a temporary public link so someone NOT on your Wi-Fi can reach this page - they'll still need the password.</p>
+            <div id="internetShareOff">
+                <button id="internetShareStartBtn" class="btn-small">Start Internet Sharing</button>
+            </div>
+            <div id="internetShareOn" style="display:none;">
+                <p class="hint">⚠️ Anyone with this link can reach your files if they know the password. Stop sharing when you're done.</p>
+                <p id="internetShareUrl" class="hint"></p>
+                <img id="internetShareQr" src="" width="140" alt="QR code for the public link" style="display:none;">
+                <button id="internetShareStopBtn" class="btn-small btn-danger">Stop Internet Sharing</button>
+            </div>
+            <p id="internetShareError" class="login-error" style="display:none;"></p>
+        </section>
+
+        <!-- ============================================================
+             UPLOAD - drag & drop zone
+             ============================================================ -->
+        <section class="card">
+            <h2>Share files</h2>
+            <div id="dropZone" class="drop-zone">
+                <p id="dropZoneText">📂 Drag & drop files here, or click to choose (you can select more than one)</p>
+                <input type="file" id="fileInput" multiple hidden>
+            </div>
+            <div id="progressWrap" class="progress-wrap" style="display:none;">
+                <div id="progressBar" class="progress-bar"></div>
+                <span id="progressText">0%</span>
+            </div>
+            <div id="uploadStatus" class="status-msg"></div>
+        </section>
+
+        <!-- ============================================================
+             FILE LIST - with search
+             ============================================================ -->
+        <section class="card">
+            <div class="section-header">
+                <h2>Shared files ({{ files|length }})</h2>
+                <input type="text" id="searchBox" placeholder="🔍 Search files..." value="{{ search }}">
+            </div>
+
+            <ul class="file-list" id="fileList">
+                {% for f in files %}
+                <li class="file-row" data-filename="{{ f.filename }}">
+                    <span class="file-icon {{ 'previewable' if (f.is_image or f.is_video) else '' }}"
+                          {% if f.is_image or f.is_video %}data-preview="{{ f.filename }}" data-kind="{{ 'image' if f.is_image else 'video' }}"{% endif %}>
+                        {% if f.is_image %}🖼️
+                        {% elif f.is_video %}🎬
+                        {% else %}
+                            {% set ext = f.filename.split('.')[-1].lower() if '.' in f.filename else '' %}
+                            {% if ext == 'pdf' %}📕
+                            {% elif ext in ['doc','docx'] %}📄
+                            {% elif ext in ['xls','xlsx','csv'] %}📊
+                            {% elif ext in ['ppt','pptx'] %}📽️
+                            {% elif ext in ['zip','rar','7z'] %}🗜️
+                            {% elif ext in ['mp3','wav'] %}🎵
+                            {% else %}📁
+                            {% endif %}
+                        {% endif %}
+                    </span>
+                    <div class="file-info">
+                        <span class="file-name" data-filename="{{ f.filename }}">{{ f.filename }}</span>
+                        <span class="file-meta">{{ f.size_display }} · shared by {{ f.uploader }} · {{ f.upload_time }} · {{ f.download_count }} download{{ 's' if f.download_count != 1 else '' }}</span>
+                    </div>
+                    <div class="file-actions">
+                        <a href="/download/{{ f.filename }}" class="btn-small">Download</a>
+                        <button class="btn-small rename-btn" data-filename="{{ f.filename }}">Rename</button>
+                        <button class="btn-small btn-danger delete-btn" data-filename="{{ f.filename }}">Delete</button>
+                    </div>
+                </li>
+                {% else %}
+                <li class="empty-state">No files yet — be the first to share one.</li>
+                {% endfor %}
+            </ul>
+        </section>
+
+        <!-- ============================================================
+             LIVE CHAT
+             ============================================================ -->
+        <section class="card">
+            <div class="section-header">
+                <h2>Live Chat</h2>
+                <span id="onlineCount" class="online-badge">● 0 online</span>
+            </div>
+            <div id="messages" class="chat-box"></div>
+            <div class="chat-input-row">
+                <input type="text" id="message" placeholder="Type a message...">
+                <button id="sendBtn">Send</button>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- ============================================================
+         PREVIEW LIGHTBOX - for images/video, filled in by script.js
+         ============================================================ -->
+    <div id="previewOverlay" class="modal-overlay preview-overlay" style="display:none;">
+        <div class="preview-box">
+            <button id="previewClose" class="icon-btn preview-close" title="Close">✕</button>
+            <div id="previewContent" class="preview-content"></div>
+            <p id="previewCaption" class="preview-caption"></p>
+        </div>
+    </div>
+
+    <script src="/static/script.js"></script>
+</body>
+</html>
