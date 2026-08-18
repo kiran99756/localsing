@@ -6,10 +6,14 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
+
+# Ensure required directories exist in the container
 RUN mkdir -p /app/static /app/templates
 
-# Railway injects PORT at runtime; config.py reads it. Volume (if attached)
-# should be mounted at /data, matched by LOCALSHARE_DATA_DIR below.
+# Explicitly copy application assets
+COPY static /app/static
+COPY templates /app/templates
+
 ENV LOCALSHARE_DATA_DIR=/data
 
 EXPOSE 8000
