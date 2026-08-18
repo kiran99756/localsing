@@ -1,0 +1,44 @@
+name: Build Windows exe
+
+# Runs whenever you push a tag like "v1.0.0" - builds LocalShare.exe on a
+# real Windows runner and attaches it to a GitHub Release automatically.
+# This is what lets people download a ready-to-run .exe from your Releases
+# page without needing Python installed - a big deal for adoption.
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch: {}   # also allows manually triggering from the Actions tab
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-build.txt
+
+      - name: Build with PyInstaller
+        run: pyinstaller localshare.spec --noconfirm
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: LocalShare-windows
+          path: dist/LocalShare.exe
+
+      - name: Attach to GitHub Release
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/LocalShare.exe
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
