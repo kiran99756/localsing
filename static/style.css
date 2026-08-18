@@ -1,0 +1,404 @@
+/*
+  Design approach: CSS custom properties (variables) hold every color.
+  Dark mode just swaps the variable values via a class on <body> -
+  we never repeat color rules twice.
+*/
+
+:root {
+    --bg: #f4f5f7;
+    --card-bg: #ffffff;
+    --text: #1a1a1a;
+    --text-muted: #6b7280;
+    --border: #e5e7eb;
+    --accent: #2563eb;
+    --accent-hover: #1d4ed8;
+    --danger: #dc2626;
+    --success: #16a34a;
+    --shadow: 0 1px 3px rgba(0,0,0,0.08);
+}
+
+body.dark {
+    --bg: #14161a;
+    --card-bg: #1e2126;
+    --text: #e5e7eb;
+    --text-muted: #9ca3af;
+    --border: #2d3138;
+    --accent: #3b82f6;
+    --accent-hover: #60a5fa;
+    --shadow: 0 1px 3px rgba(0,0,0,0.4);
+}
+
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    transition: background 0.2s, color 0.2s;
+}
+
+.app {
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 16px;
+}
+
+/* ---------- Header ---------- */
+.topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 4px 20px;
+}
+
+.topbar h1 {
+    font-size: 22px;
+    margin: 0;
+}
+
+.topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.device-badge {
+    font-size: 13px;
+    background: var(--border);
+    color: var(--text-muted);
+    padding: 4px 10px;
+    border-radius: 999px;
+}
+
+.icon-btn {
+    background: none;
+    border: none;
+    font-size: 18px;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 8px;
+}
+.icon-btn:hover { background: var(--border); }
+
+/* ---------- Cards ---------- */
+.card {
+    background: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 18px;
+    margin-bottom: 16px;
+    box-shadow: var(--shadow);
+}
+
+.card h2 {
+    font-size: 15px;
+    margin: 0 0 12px;
+    color: var(--text-muted);
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+}
+
+.qr-card { text-align: center; }
+.qr-card img { border-radius: 10px; margin: 6px 0; }
+.hint { font-size: 13px; color: var(--text-muted); margin: 4px 0 0; }
+.hint code {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    padding: 2px 6px;
+    border-radius: 6px;
+    font-size: 12px;
+}
+
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+.section-header h2 { margin: 0; }
+
+/* ---------- Drop zone ---------- */
+.drop-zone {
+    border: 2px dashed var(--border);
+    border-radius: 12px;
+    padding: 28px 16px;
+    text-align: center;
+    cursor: pointer;
+    color: var(--text-muted);
+    transition: border-color 0.15s, background 0.15s;
+}
+.drop-zone:hover, .drop-zone.dragover {
+    border-color: var(--accent);
+    background: rgba(37, 99, 235, 0.05);
+}
+
+.progress-wrap {
+    margin-top: 12px;
+    background: var(--border);
+    border-radius: 999px;
+    height: 20px;
+    position: relative;
+    overflow: hidden;
+}
+.progress-bar {
+    height: 100%;
+    width: 0%;
+    background: var(--accent);
+    transition: width 0.15s;
+}
+#progressText {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    text-align: center;
+    font-size: 12px;
+    line-height: 20px;
+    color: white;
+    mix-blend-mode: difference;
+}
+
+.status-msg {
+    margin-top: 10px;
+    font-size: 13px;
+    min-height: 18px;
+}
+.status-msg.error { color: var(--danger); }
+.status-msg.success { color: var(--success); }
+
+/* ---------- File list ---------- */
+#searchBox {
+    padding: 8px 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 13px;
+    width: 160px;
+}
+
+.file-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.file-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+}
+.file-row:last-child { border-bottom: none; }
+
+.file-icon { font-size: 22px; }
+
+.file-info {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+}
+.file-name {
+    font-size: 14px;
+    font-weight: 500;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.file-meta {
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.file-actions {
+    display: flex;
+    gap: 6px;
+    flex-shrink: 0;
+}
+
+.btn-small {
+    font-size: 12px;
+    padding: 6px 10px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    color: var(--text);
+    text-decoration: none;
+    cursor: pointer;
+}
+.btn-small:hover { border-color: var(--accent); color: var(--accent); }
+.btn-danger:hover { border-color: var(--danger); color: var(--danger); }
+
+.empty-state {
+    text-align: center;
+    color: var(--text-muted);
+    font-size: 13px;
+    padding: 20px 0;
+}
+
+/* ---------- Chat ---------- */
+.online-badge {
+    font-size: 12px;
+    color: var(--success);
+}
+
+.chat-box {
+    height: 180px;
+    overflow-y: auto;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px;
+    background: var(--bg);
+    margin-bottom: 10px;
+    font-size: 13px;
+}
+
+.chat-box p { margin: 4px 0; }
+.chat-msg-user { font-weight: 600; }
+.chat-msg-system {
+    color: var(--text-muted);
+    font-style: italic;
+    font-size: 12px;
+}
+
+.chat-input-row {
+    display: flex;
+    gap: 8px;
+}
+.chat-input-row input {
+    flex: 1;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--card-bg);
+    color: var(--text);
+}
+.chat-input-row button, #nameSaveBtn {
+    padding: 10px 16px;
+    border: none;
+    border-radius: 8px;
+    background: var(--accent);
+    color: white;
+    cursor: pointer;
+    font-weight: 500;
+}
+.chat-input-row button:hover, #nameSaveBtn:hover { background: var(--accent-hover); }
+
+/* ---------- Device name modal ---------- */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    padding: 16px;
+}
+.modal-box {
+    background: var(--card-bg);
+    border-radius: 14px;
+    padding: 24px;
+    max-width: 340px;
+    width: 100%;
+    text-align: center;
+}
+.modal-box h2 { font-size: 18px; margin: 0 0 8px; text-transform: none; }
+.modal-sub { font-size: 13px; color: var(--text-muted); margin: 0 0 16px; }
+#nameInput {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--bg);
+    color: var(--text);
+    margin-bottom: 12px;
+    font-size: 14px;
+}
+#nameSaveBtn { width: 100%; }
+
+/* ---------- Login page ---------- */
+.login-wrap {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    background: var(--bg);
+}
+.login-wrap form { display: flex; flex-direction: column; gap: 10px; }
+.login-wrap input[type="password"] {
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: var(--bg);
+    color: var(--text);
+    font-size: 14px;
+}
+.login-error {
+    color: var(--danger);
+    font-size: 13px;
+    margin: -6px 0 4px;
+}
+
+/* ---------- Lock badge / logout ---------- */
+.lock-badge { font-size: 15px; }
+
+/* ---------- Previewable files ---------- */
+.file-icon.previewable { cursor: pointer; }
+.file-name[data-filename] { cursor: default; }
+
+.rename-input {
+    font-size: 14px;
+    padding: 4px 6px;
+    border: 1px solid var(--accent);
+    border-radius: 6px;
+    background: var(--bg);
+    color: var(--text);
+    width: 100%;
+}
+
+/* ---------- Preview lightbox ---------- */
+.preview-overlay { z-index: 200; }
+.preview-box {
+    position: relative;
+    max-width: 90vw;
+    max-height: 88vh;
+    background: var(--card-bg);
+    border-radius: 14px;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+.preview-content {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    max-width: 100%;
+    max-height: 72vh;
+}
+.preview-content img, .preview-content video {
+    max-width: 100%;
+    max-height: 72vh;
+    border-radius: 8px;
+    display: block;
+}
+.preview-caption {
+    font-size: 13px;
+    color: var(--text-muted);
+    margin: 0;
+    word-break: break-all;
+    text-align: center;
+}
+.preview-close {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+}
