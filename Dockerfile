@@ -6,6 +6,7 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
+RUN mkdir -p /app/static /app/templates
 
 # Railway injects PORT at runtime; config.py reads it. Volume (if attached)
 # should be mounted at /data, matched by LOCALSHARE_DATA_DIR below.
