@@ -1,0 +1,14 @@
+.git
+.github
+uploads/*
+!uploads/.gitkeep
+filesharing.db
+security.json
+.preview_cache
+__pycache__
+*.pyc
+build_windows.bat
+localshare.spec
+requirements-build.txt
+dist
+build

@@ -1,0 +1,9 @@
+# Runtime dependencies only - what you need to just run `python main.py`.
+# For building the Windows .exe, also see requirements-build.txt.
+fastapi>=0.110
+uvicorn[standard]>=0.29
+python-multipart>=0.0.9
+qrcode[pil]>=7.4
+zeroconf>=0.132
+cryptography>=42.0
+jinja2>=3.1
