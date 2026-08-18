@@ -67,7 +67,10 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 database.init_db()  # creates filesharing.db + the files table if not already there
 
-app.mount("/static", StaticFiles(directory=config.resource_dir("static")), name="static")
+STATIC_DIR = config.resource_dir("static")
+os.makedirs(STATIC_DIR, exist_ok=True)
+
+app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
 templates = Jinja2Templates(directory=config.resource_dir("templates"))
 
 
